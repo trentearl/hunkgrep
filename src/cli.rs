@@ -60,8 +60,11 @@ pub fn parse<'a>() -> Result<(String, Vec<Patch<'a>>, Params), ParseError> {
 
     let contents_ref: &'a str = Box::leak(contents.into_boxed_str());
 
-    let patches =
-        Patch::from_multiple(contents_ref).map_err(|e| ParseError::Patch(e.to_string()))?;
+    let patches = if contents_ref.trim().is_empty() {
+        Vec::new()
+    } else {
+        Patch::from_multiple(contents_ref).map_err(|e| ParseError::Patch(e.to_string()))?
+    };
 
     let params = Params {
         grep: cli.grep,
