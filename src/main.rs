@@ -75,3 +75,48 @@ fn lines_pass(lines: &Vec<patch::Line>, args: &cli::Params) -> bool {
         contains_grep
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn build_params(grep: &str, invert: bool, ignore: bool) -> cli::Params {
+        cli::Params {
+            grep: grep.to_string(),
+            invert_match: invert,
+            ignore_case: ignore,
+            files_with_matches: false,
+        }
+    }
+
+    #[test]
+    fn match_found() {
+        let args = build_params("foo", false, false);
+        let lines = vec![
+            patch::Line::Add("foo bar"),
+            patch::Line::Remove("baz"),
+        ];
+        assert!(lines_pass(&lines, &args));
+    }
+
+    #[test]
+    fn no_match() {
+        let args = build_params("foo", false, false);
+        let lines = vec![patch::Line::Add("bar")];
+        assert!(!lines_pass(&lines, &args));
+    }
+
+    #[test]
+    fn ignore_case() {
+        let args = build_params("FOO", false, true);
+        let lines = vec![patch::Line::Add("foo")];
+        assert!(lines_pass(&lines, &args));
+    }
+
+    #[test]
+    fn invert_match() {
+        let args = build_params("foo", true, false);
+        let lines = vec![patch::Line::Add("bar")];
+        assert!(lines_pass(&lines, &args));
+    }
+}
